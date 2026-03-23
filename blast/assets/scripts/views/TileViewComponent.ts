@@ -46,13 +46,11 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     protected _onMouseMoveIn (event?: cc.Event.EventMouse): void {
-        let spriteComponent = this.getComponent(cc.Sprite);
-        //spriteComponent.color = new Color(128, 128, 128);
+        this.node.color = new cc.Color(128, 128, 128);
     }
 
     protected _onMouseMoveOut (event?: cc.Event.EventMouse): void {
-        let spriteComponent = this.getComponent(cc.Sprite);
-        //spriteComponent.color = new Color(256, 256, 256);
+        this.node.color = new cc.Color(255, 255, 255);
     }
 
     protected _onMouseDown (event?: cc.Event.EventMouse): void {

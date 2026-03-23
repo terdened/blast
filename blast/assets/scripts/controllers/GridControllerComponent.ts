@@ -2,10 +2,12 @@ import { TileViewComponent } from '../views/TileViewComponent';
 import { TileModel } from '../models/TileModel';
 import { GridViewComponent } from '../views/GridViewComponent';
 import { GridService } from '../services/GridService';
+import { GridModel } from '../models/GridModel';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GridControllerComponent')
 export class GridControllerComponent extends cc.Component {
+    grid: GridModel;
     eventTarget: cc.EventTarget = new cc.EventTarget();
 
     @property({type: cc.Node})
@@ -29,7 +31,12 @@ export class GridControllerComponent extends cc.Component {
     }
 
     createGrid(width: number, height: number) {
-        this._gridService.init(width, height);
+        this.grid = new GridModel({
+            width: width,
+            height: height,
+            tiles: this._gridService.createTiles(width, height)
+        });
+
         this.updateBackground();
     }
 
@@ -50,7 +57,17 @@ export class GridControllerComponent extends cc.Component {
     }
 
     onTileClicked(model: TileModel) {
-        this._gridService.handleClick(model);
+        const group = this._gridService.findConnected(model, this.grid);
+
+        if (group.length >= 2) {
+            for (const tile of group) {
+                this._gridService.removeTile(tile, this.grid);
+            }
+
+            this._gridService.applyGravity(this.grid);
+            this._gridService.spawnNewTiles(this.grid);
+        }
+        
         this.eventTarget.emit('endOfTurn');
     }
 
@@ -77,7 +94,7 @@ export class GridControllerComponent extends cc.Component {
 
     updateBackground() {
         let viewComponent = this.background.getComponent(GridViewComponent);
-        viewComponent.init(this._gridService.grid);
+        viewComponent.init(this.grid);
     }
 }
 

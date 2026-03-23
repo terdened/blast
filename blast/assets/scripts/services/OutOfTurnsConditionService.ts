@@ -1,4 +1,3 @@
-import { TileModel } from "../models/TileModel";
 import { GridService } from "./GridService";
 import { IBaseConditionService } from "./IBaseConditionService";
 

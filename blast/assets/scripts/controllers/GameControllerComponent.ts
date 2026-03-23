@@ -1,9 +1,9 @@
 import { GameModel } from '../models/GameModel';
-import { GameState } from '../common/enums/GameState';
 import { TileModel } from '../models/TileModel';
 import { GridControllerComponent } from './GridControllerComponent';
 import { GridService } from '../services/GridService';
 import { GameOverConditionService } from '../services/GameOverConditionService';
+import { GameService } from '../services/GameService';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GameControllerComponent')
@@ -17,6 +17,7 @@ export class GameControllerComponent extends cc.Component {
     game: GameModel = new GameModel();
     _viewMap: Map<TileModel, Node> = new Map<TileModel, Node>();
 
+    private _gameService: GameService;
     private _gridService: GridService;
     private _gameOverConditionService: GameOverConditionService;
 
@@ -33,7 +34,7 @@ export class GameControllerComponent extends cc.Component {
 
     onEndOfTurn() {
         this.game.currentTurn++;
-        if (this._gameOverConditionService.check()) {
+        if (this._gameOverConditionService.check(this.gridController.grid)) {
             this.gameOver();
         }
     }
@@ -41,6 +42,7 @@ export class GameControllerComponent extends cc.Component {
     initServices() {
         this._gridService = new GridService();
         this._gameOverConditionService = new GameOverConditionService(this._gridService);
+        this._gameService = new GameService(this._gameOverConditionService);
     }
 
     initComponents() {
@@ -52,13 +54,12 @@ export class GameControllerComponent extends cc.Component {
     }
 
     startGame () {
-        this.game.score = 0;
-        this.game.state = GameState.GS_Play;
+        this._gameService.startGame(this.game);
         this.gridController.createGrid(4, 6);
     }
 
     gameOver () {
-        this.game.state = GameState.GS_GameOver;
+        this._gameService.gameOver(this.game);
         this.gameOverPanel.active = true;
     }
 

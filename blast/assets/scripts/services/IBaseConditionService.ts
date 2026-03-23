@@ -1,3 +1,5 @@
+import { GridModel } from "../models/GridModel";
+
 export interface IBaseConditionService {
-    check(): boolean;
+    check(grid: GridModel): boolean;
 }

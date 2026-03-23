@@ -4,32 +4,28 @@ import { TileColor } from '../common/enums/TileColor';
 
 
 export class GridService {
-    grid: GridModel;
     eventTarget: cc.EventTarget = new cc.EventTarget();
 
     init(width: number, height: number) {
-        this.grid = new GridModel({
-            width: width,
-            height: height,
-            tiles: []
-        });
-
-        this.createTiles();
+        
     }
 
-    createTiles() {
-        for (var y = 0; y < this.grid.height; y++)
+    createTiles(width: number, height: number): TileModel[][] {
+        let result: TileModel[][] = [];
+        for (var y = 0; y < height; y++)
         {
             let row: TileModel[] = [];
             
-            for (var x = 0; x < this.grid.width; x++)
+            for (var x = 0; x < width; x++)
             {
                 const tile = this.createTile(x, y);
                 row.push(tile);
             }
 
-            this.grid.tiles.push(row);
+            result.push(row);
         }
+
+        return result;
     }
 
     createTile(x: number, y: number): TileModel {
@@ -44,29 +40,16 @@ export class GridService {
         return tile;
     }
 
-    handleClick(model: TileModel) {
-        const group = this.findConnected(model);
-
-        if (group.length >= 2) {
-            for (const tile of group) {
-                this.removeTile(tile);
-            }
-
-            this.applyGravity();
-            this.spawnNewTiles();
-        }
-    }
-
-    applyGravity() {
-        for (let x = 0; x < this.grid.width; x++) {
+    applyGravity(grid: GridModel) {
+        for (let x = 0; x < grid.width; x++) {
             let emptyY = 0;
 
-            for (let y = 0; y < this.grid.height; y++) {
-                const tile = this.grid.tiles[y][x];
+            for (let y = 0; y < grid.height; y++) {
+                const tile = grid.tiles[y][x];
 
                 if (tile !== undefined) {
                     if (y !== emptyY) {
-                        this.moveTile(tile, x, emptyY);
+                        this.moveTile(tile, x, emptyY, grid);
                     }
 
                     emptyY++;
@@ -75,9 +58,9 @@ export class GridService {
         }
     }
 
-    moveTile(tile: TileModel, x: number, y: number) {
-        this.grid.tiles[y][x] = tile;
-        this.grid.tiles[tile.position.y][tile.position.x] = undefined;
+    moveTile(tile: TileModel, x: number, y: number, grid: GridModel) {
+        grid.tiles[y][x] = tile;
+        grid.tiles[tile.position.y][tile.position.x] = undefined;
 
         tile.position.x = x;
         tile.position.y = y;
@@ -85,32 +68,32 @@ export class GridService {
         this.eventTarget.emit('TileUpdated', tile);
     }
 
-    removeTileAtPosition(x: number, y: number) {
-        const tile = this.grid.tiles[y][x];
-        this.removeTile(tile);
+    removeTileAtPosition(x: number, y: number, grid: GridModel) {
+        const tile = grid.tiles[y][x];
+        this.removeTile(tile, grid);
     }
 
-    removeTile(tile: TileModel) {
+    removeTile(tile: TileModel, grid: GridModel) {
         if(tile === undefined) {
             return;
         }
 
-        this.grid.tiles[tile.position.y][tile.position.x] = undefined;
+        grid.tiles[tile.position.y][tile.position.x] = undefined;
         this.eventTarget.emit('TileRemoved', tile);
     }
 
-    spawnNewTiles() {
-        for (let x = 0; x < this.grid.width; x++) {
-            for (let y = 0; y < this.grid.height; y++) {
-                if (this.grid.tiles[y][x] == null) {
+    spawnNewTiles(grid: GridModel) {
+        for (let x = 0; x < grid.width; x++) {
+            for (let y = 0; y < grid.height; y++) {
+                if (grid.tiles[y][x] == null) {
                     const tileModel = this.createTile(x, y);
-                    this.grid.tiles[y][x] = tileModel;
+                    grid.tiles[y][x] = tileModel;
                 }
             }
         }
     }
 
-    getNeighbors(tile: TileModel): TileModel[] {
+    getNeighbors(tile: TileModel, grid: GridModel): TileModel[] {
         const dirs = [
             { x: 0, y: -1 },
             { x: 0, y: 1 },
@@ -124,15 +107,15 @@ export class GridService {
             const nx = tile.position.x + d.x;
             const ny = tile.position.y + d.y;
 
-            if (this.grid.tiles[ny] && this.grid.tiles[ny][nx]) {
-                result.push(this.grid.tiles[ny][nx]);
+            if (grid.tiles[ny] && grid.tiles[ny][nx]) {
+                result.push(grid.tiles[ny][nx]);
             }
         }
 
         return result;
     }
 
-    findConnected(startTile: TileModel): TileModel[] {
+    findConnected(startTile: TileModel, grid: GridModel): TileModel[] {
         const stack: TileModel[] = [startTile];
         const visited = new Set<string>();
         const result: TileModel[] = [];
@@ -150,7 +133,7 @@ export class GridService {
 
             result.push(tile);
 
-            const neighbors = this.getNeighbors(tile);
+            const neighbors = this.getNeighbors(tile, grid);
             for (const n of neighbors) {
                 stack.push(n);
             }
