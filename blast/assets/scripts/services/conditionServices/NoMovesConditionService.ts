@@ -1,14 +1,10 @@
-import { GridModel } from "../models/GridModel";
-import { TileModel } from "../models/TileModel";
-import { GridService } from "./GridService";
+import { GridModel } from "../../models/GridModel";
+import { TileModel } from "../../models/TileModel";
+import { GridService } from "../GridService";
 import { IBaseConditionService } from "./IBaseConditionService";
 
 export class NoMovesConditionService implements IBaseConditionService {
-
-    constructor(private _gridService: GridService
-    ) {
-
-    }
+    private _gridService: GridService = new GridService();
 
     check(grid: GridModel): boolean {
         const visited = new Set<string>();

@@ -6,8 +6,14 @@ import { TileColor } from '../common/enums/TileColor';
 export class GridService {
     eventTarget: cc.EventTarget = new cc.EventTarget();
 
-    init(width: number, height: number) {
-        
+    createGrid(width: number, height: number): GridModel {
+        const result = new GridModel({
+            width: width,
+            height: height,
+            tiles: this.createTiles(width, height)
+        });
+
+        return result;
     }
 
     createTiles(width: number, height: number): TileModel[][] {
@@ -140,6 +146,23 @@ export class GridService {
         }
 
         return result;
+    }
+
+    collectTile(tile: TileModel, grid: GridModel): number {
+        const group = this.findConnected(tile, grid);
+
+        if (group.length >= 2) {
+            for (const item of group) {
+                this.removeTile(item, grid);
+            }
+
+            this.applyGravity(grid);
+            this.spawnNewTiles(grid);
+
+            return group.length * 5;
+        }
+
+        return 0;
     }
 }
 

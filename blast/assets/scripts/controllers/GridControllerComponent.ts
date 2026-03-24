@@ -20,8 +20,8 @@ export class GridControllerComponent extends cc.Component {
 
     _gridService: GridService;
 
-    init(gridService: GridService) {
-        this._gridService = gridService;
+    init() {
+        this._gridService = new GridService();
         this._gridService.eventTarget.on('TileCreated', this.onTileCreated, this);
         this._gridService.eventTarget.on('TileUpdated', this.onTileUpdated, this);
         this._gridService.eventTarget.on('TileRemoved', this.onTileRemoved, this);
@@ -31,12 +31,7 @@ export class GridControllerComponent extends cc.Component {
     }
 
     createGrid(width: number, height: number) {
-        this.grid = new GridModel({
-            width: width,
-            height: height,
-            tiles: this._gridService.createTiles(width, height)
-        });
-
+        this.grid = this._gridService.createGrid(width, height);
         this.updateBackground();
     }
 
@@ -57,18 +52,10 @@ export class GridControllerComponent extends cc.Component {
     }
 
     onTileClicked(model: TileModel) {
-        const group = this._gridService.findConnected(model, this.grid);
-
-        if (group.length >= 2) {
-            for (const tile of group) {
-                this._gridService.removeTile(tile, this.grid);
-            }
-
-            this._gridService.applyGravity(this.grid);
-            this._gridService.spawnNewTiles(this.grid);
+        const score = this._gridService.collectTile(model, this.grid);
+        if (score > 0) {
+            this.eventTarget.emit('endOfTurn', score);
         }
-        
-        this.eventTarget.emit('endOfTurn');
     }
 
     onTileUpdated(tile: TileModel) {

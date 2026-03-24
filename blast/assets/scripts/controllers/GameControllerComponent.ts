@@ -1,78 +1,60 @@
 import { GameModel } from '../models/GameModel';
-import { TileModel } from '../models/TileModel';
 import { GridControllerComponent } from './GridControllerComponent';
-import { GridService } from '../services/GridService';
-import { GameOverConditionService } from '../services/GameOverConditionService';
 import { GameService } from '../services/GameService';
+import { GameInfoViewComponent } from '../views/GameInfoViewComponent';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GameControllerComponent')
 export class GameControllerComponent extends cc.Component {
+    @property({type: GameInfoViewComponent})
+    gameInfoView: GameInfoViewComponent;
+
     @property({type: GridControllerComponent})
     gridController: GridControllerComponent;
 
     @property({type: cc.Node})
     gameOverPanel: cc.Node;
 
+    @property({type: cc.Node})
+    winPanel: cc.Node;
+
     game: GameModel = new GameModel();
-    _viewMap: Map<TileModel, Node> = new Map<TileModel, Node>();
 
     private _gameService: GameService;
-    private _gridService: GridService;
-    private _gameOverConditionService: GameOverConditionService;
 
     protected onEnable(): void {
-        this.init();
-    }
+        this._gameService = new GameService();
+        this._gameService.eventTarget.on('gameOver', this.onGameOver, this);
+        this._gameService.eventTarget.on('win', this.onWin, this);
 
-    init() {
-        this.initServices();
-        this.initComponents();
-
+        this.gridController.init();
         this.gridController.eventTarget.on('endOfTurn', this.onEndOfTurn, this);
     }
 
-    onEndOfTurn() {
-        this.game.currentTurn++;
-        if (this._gameOverConditionService.check(this.gridController.grid)) {
-            this.gameOver();
-        }
+    protected start(): void {
+        this.newGame();
     }
 
-    initServices() {
-        this._gridService = new GridService();
-        this._gameOverConditionService = new GameOverConditionService(this._gridService);
-        this._gameService = new GameService(this._gameOverConditionService);
+    private onEndOfTurn(score: number): void {
+        this._gameService.onEndOfTurn(this.game, this.gridController.grid, score);
+        this.gameInfoView.dirty();
     }
 
-    initComponents() {
-        this.gridController.init(this._gridService);
+    private onWin(): void {
+        this.winPanel.active = true;
     }
 
-    start() {
-        this.startGame();
-    }
-
-    startGame () {
-        this._gameService.startGame(this.game);
-        this.gridController.createGrid(4, 6);
-    }
-
-    gameOver () {
-        this._gameService.gameOver(this.game);
+    private onGameOver(): void {
         this.gameOverPanel.active = true;
     }
 
-    newGame() {
-        if (this.game !== undefined) {
-            this.destroyGame();
-        }
-
-        this.start();
-        this.gameOverPanel.active = false;
-    }
-
-    destroyGame() {
+    private newGame(): void {
         this.gridController.clearGrid();
+        this._gameService.startGame(this.game);
+        this.gridController.createGrid(4, 6);
+
+        this.gameOverPanel.active = false;
+        this.winPanel.active = false;
+        this.gameInfoView.init(this.game);
     }
 }
