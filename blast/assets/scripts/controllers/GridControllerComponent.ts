@@ -37,6 +37,7 @@ export class GridControllerComponent extends cc.Component {
 
     clearGrid() {
         this._viewMap.forEach(x => x.destroy());
+        this._viewMap.clear();
     }
 
     onTileCreated(tile: TileModel) {
@@ -82,6 +83,13 @@ export class GridControllerComponent extends cc.Component {
     updateBackground() {
         let viewComponent = this.background.getComponent(GridViewComponent);
         viewComponent.init(this.grid);
+    }
+
+    redrawTiles() {
+        this._viewMap.forEach(tile => {
+            const tileView = tile.getComponent(TileViewComponent);
+            tileView.dirty();
+        });
     }
 }
 

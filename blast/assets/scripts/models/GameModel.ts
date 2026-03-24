@@ -6,6 +6,8 @@ export class GameModel {
     targetScore: number;
     remainMoves: number;
 
+    remainShuffleCounts: number;
+
     public constructor(init?:Partial<GameModel>) {
         Object.assign(this, init);
     }

@@ -1,0 +1,9 @@
+{
+    "gridWidth": 3,
+    "gridHeight": 5,
+
+    "maxMoves": 30,
+    "targetScores": 500,
+
+    "maxShuffles": 3
+}

@@ -164,6 +164,85 @@ export class GridService {
 
         return 0;
     }
+
+    shuffleGrid(grid: GridModel) {
+        const flat = this.flatten(grid.tiles);
+
+        for (let i = flat.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [flat[i], flat[j]] = [flat[j], flat[i]];
+        }
+
+        let index = 0;
+        for (let y = 0; y < grid.height; y++) {
+            for (let x = 0; x < grid.width; x++) {
+                grid.tiles[y][x] = flat[index++];
+                grid.tiles[y][x].position.x = x;
+                grid.tiles[y][x].position.y = y;
+                this.eventTarget.emit('TileUpdated', grid.tiles[y][x]);
+            }
+        }
+    }
+
+    flatten(grid: TileModel[][]): TileModel[] {
+        const result: TileModel[] = [];
+
+        for (let y = 0; y < grid.length; y++) {
+            for (let x = 0; x < grid[y].length; x++) {
+                result.push(grid[y][x]);
+            }
+        }
+
+        return result;
+    }
+
+    hasMoves(grid: GridModel): boolean {
+        const visited = new Set<string>();
+
+        for (let y = 0; y < grid.height; y++) {
+            for (let x = 0; x < grid.width; x++) {
+                const key = `${x}_${y}`;
+
+                if (visited.has(key)) continue;
+
+                const group = this.findGroup(x, y, visited, grid);
+
+                if (group.length >= 2) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    findGroup(startX: number, startY: number, visited: Set<string>, grid: GridModel): TileModel[] {
+
+        const stack: TileModel[] = [grid.tiles[startY][startX]];
+        const result: TileModel[] = [];
+        const color = grid.tiles[startY][startX].color;
+
+        while (stack.length > 0) {
+            const tile = stack.pop()!;
+            const key = `${tile.position.x}_${tile.position.y}`;
+
+            if (visited.has(key)) continue;
+            
+            if (tile.color !== color) continue;
+
+            visited.add(key);
+
+            result.push(tile);
+
+            const neighbors = this.getNeighbors(tile, grid);
+
+            for (const n of neighbors) {
+                stack.push(n);
+            }
+        }
+
+        return result;
+    }
 }
 
 

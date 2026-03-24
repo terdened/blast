@@ -6,6 +6,9 @@ const { ccclass, property } = cc._decorator;
 export class TileViewComponent extends BaseViewComponent<TileModel> {
     public events = new cc.EventTarget();
 
+    @property([cc.Node])
+    collision: cc.Node;
+
     @property([cc.SpriteFrame])
     frames: cc.SpriteFrame[] = [];
 
@@ -34,15 +37,15 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     protected _registerNodeEvent(): void {
-        this.node.on(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
-        this.node.on(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
-        this.node.on(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
+        this.collision.on(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
+        this.collision.on(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
+        this.collision.on(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
     }
 
     protected _unregisterNodeEvent(): void {
-        this.node.off(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
-        this.node.off(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
-        this.node.off(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
+        this.collision.off(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
+        this.collision.off(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
+        this.collision.off(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
     }
 
     protected _onMouseMoveIn (event?: cc.Event.EventMouse): void {
@@ -66,6 +69,8 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
 
         let spriteComponent = this.getComponent(cc.Sprite);
         spriteComponent.spriteFrame = this.frames[this.model.color];
+
+        this.node.zIndex = this.model.position.y;
     }
 
     private calculateTargetPosition(): cc.Vec2 {
