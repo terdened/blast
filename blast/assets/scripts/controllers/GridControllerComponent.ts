@@ -3,15 +3,21 @@ import { TileModel } from '../models/TileModel';
 import { GridViewComponent } from '../views/GridViewComponent';
 import { GridService } from '../services/GridService';
 import { GridModel } from '../models/GridModel';
+import { ScoreModel } from '../models/ScoreModel';
+import { ScoreViewComponent } from '../views/ScoreViewComponent';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GridControllerComponent')
 export class GridControllerComponent extends cc.Component {
     grid: GridModel;
     eventTarget: cc.EventTarget = new cc.EventTarget();
+    isActive: boolean = true;
 
     @property({type: cc.Node})
     background: cc.Node;
+
+    @property({type: cc.Prefab})
+    scorePrefab: cc.Prefab;
 
     @property({type: cc.Prefab})
     tilePrefab: cc.Prefab;
@@ -41,6 +47,7 @@ export class GridControllerComponent extends cc.Component {
     }
 
     onTileCreated(tile: TileModel) {
+
         const tileNode = cc.instantiate(this.tilePrefab);
         this.background.addChild(tileNode);
         
@@ -53,8 +60,22 @@ export class GridControllerComponent extends cc.Component {
     }
 
     onTileClicked(model: TileModel) {
+        if (!this.isActive) {
+            return;
+        }
+        
         const score = this._gridService.collectTile(model, this.grid);
         if (score > 0) {
+            const scoreModel = new ScoreModel({
+                position: model.position, 
+                score: score
+            });
+            const scoreNode = cc.instantiate(this.scorePrefab);
+            this.background.addChild(scoreNode);
+        
+            let viewComponent = scoreNode.getComponent(ScoreViewComponent);
+            viewComponent.init(scoreModel);
+            
             this.eventTarget.emit('endOfTurn', score);
         }
     }

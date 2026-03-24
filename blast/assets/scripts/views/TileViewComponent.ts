@@ -49,10 +49,12 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     protected _onMouseMoveIn (event?: cc.Event.EventMouse): void {
+        cc.tween(this.node).to(0.2, {scale: 1.1 }, {easing: 'smooth'}).start();
         this.node.color = new cc.Color(128, 128, 128);
     }
 
     protected _onMouseMoveOut (event?: cc.Event.EventMouse): void {
+        cc.tween(this.node).to(0.2, {scale: 1 }, {easing: 'smooth'}).start();
         this.node.color = new cc.Color(255, 255, 255);
     }
 
@@ -74,7 +76,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     private calculateTargetPosition(): cc.Vec2 {
-        return new cc.Vec2(this.model.position.x * this._tileSize, this.model.position.y * this._tileSize);
+        return new cc.Vec2(this.model.position.x * this._tileSize + this._tileSize / 2, this.model.position.y * this._tileSize + this._tileSize / 2);
     }
 
     private handlePosition(dt: number): void {

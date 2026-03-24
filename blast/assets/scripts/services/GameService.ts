@@ -25,7 +25,7 @@ export class GameService {
         game.score += score;
 
         if (this._shuffleGridService.resolve(grid, game)) {
-        this.eventTarget.emit('gridShuffled');
+            this.eventTarget.emit('gridUpdated');
         }
 
         if (this._winConditionService.check(game)) {

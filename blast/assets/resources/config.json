@@ -1,8 +1,8 @@
 {
-    "gridWidth": 3,
-    "gridHeight": 5,
+    "gridWidth": 7,
+    "gridHeight": 8,
 
-    "maxMoves": 30,
+    "maxMoves": 35,
     "targetScores": 500,
 
     "maxShuffles": 3

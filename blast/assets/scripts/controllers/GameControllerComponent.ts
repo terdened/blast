@@ -28,7 +28,7 @@ export class GameControllerComponent extends cc.Component {
         this.config = await this.loadConfig();
 
         this._gameService = new GameService(this.config);
-        this._gameService.eventTarget.on('gridShuffled', this.onGridShuffled, this);
+        this._gameService.eventTarget.on('gridUpdated', this.onGridUpdated, this);
         this._gameService.eventTarget.on('gameOver', this.onGameOver, this);
         this._gameService.eventTarget.on('win', this.onWin, this);
 
@@ -54,17 +54,20 @@ export class GameControllerComponent extends cc.Component {
 
     private onWin(): void {
         this.winPanel.active = true;
+        this.gridController.isActive = false;
     }
 
     private onGameOver(): void {
         this.gameOverPanel.active = true;
+        this.gridController.isActive = false;
     }
 
-    private onGridShuffled(): void {
+    private onGridUpdated(): void {
         this.gridController.redrawTiles();
     }
 
     private newGame(): void {
+        this.gridController.isActive = true;
         this.gridController.clearGrid();
         this._gameService.startGame(this.game);
         this.gridController.createGrid(this.config.gridWidth, this.config.gridHeight);

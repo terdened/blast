@@ -17,6 +17,14 @@ export class GameInfoViewComponent extends BaseViewComponent<GameModel> {
     dirty() {
         this.remainMovesLabel.string = this.model.remainMoves.toString();
         this.scoresLabel.string = `${this.model.score}/${this.model.targetScore}`;
+        this.playAddScoreAnimation();
+    }
+
+    playAddScoreAnimation() {
+        cc.tween(this.scoresLabel.node)
+            .to(0.2, {scale: 1.1}, {easing: 'smooth'})
+            .to(0.2, {scale: 1}, {easing: 'smooth'})
+            .start();
     }
 }
 
