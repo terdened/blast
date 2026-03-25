@@ -5,6 +5,7 @@ import { GridService } from '../services/GridService';
 import { GridModel } from '../models/GridModel';
 import { ScoreModel } from '../models/ScoreModel';
 import { ScoreViewComponent } from '../views/ScoreViewComponent';
+import { GameConstants } from '../common/GameConstants';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('GridControllerComponent')
@@ -12,7 +13,6 @@ export class GridControllerComponent extends cc.Component {
     grid: GridModel;
     eventTarget: cc.EventTarget = new cc.EventTarget();
     isActive: boolean = true;
-    private _tileSize: number = 100;
 
     @property({type: cc.Node})
     background: cc.Node;
@@ -53,8 +53,7 @@ export class GridControllerComponent extends cc.Component {
         let columnOffset = newTilesInColumnCount.get(tile.position.x) ?? 0;
         columnOffset++;
         newTilesInColumnCount.set(tile.position.x, columnOffset);
-
-        return columnOffset * this._tileSize + this.grid.height * this._tileSize;
+        return 2 * columnOffset * GameConstants.TILE_SIZE + this.grid.height * GameConstants.TILE_SIZE + Math.random() * GameConstants.RANDOM_OFFSET;
     }
 
     onTileClicked(tile: TileModel) {

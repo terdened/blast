@@ -2,9 +2,10 @@ export const fInterpTo = (current: number, target: number, dt: number, speed: nu
     if (speed <= 0) return target;
 
     const dist = target - current;
-    if (Math.abs(dist) < 0.0001) return target;
+    const deltaMove = Math.sign(dist) * speed * dt;
 
-    const deltaMove = dist * Math.min(dt * speed, 1);
+    if (Math.abs(dist) < Math.abs(deltaMove)) return target;
+
     return current + deltaMove;
 }
 

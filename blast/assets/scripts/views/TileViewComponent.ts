@@ -1,6 +1,7 @@
 import { TileModel } from '../models/TileModel';
 import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { v2InterpTo } from '../common/extentsions/MathExtentions';
+import { GameConstants } from '../common/GameConstants';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('TileViewComponent')
@@ -15,9 +16,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
 
     private _movementFinished: boolean = true;
     private _targetPosition: cc.Vec2;
-    private _tileSize: number = 100;
     private _velocity: number = 0;
-    private _gravityForce: number = 50;
 
     protected onEnable(): void {
         this._registerNodeEvent();
@@ -73,7 +72,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     private calculateTargetPosition(): cc.Vec2 {
-        return new cc.Vec2(this.model.position.x * this._tileSize + this._tileSize / 2, this.model.position.y * this._tileSize + this._tileSize / 2);
+        return new cc.Vec2(this.model.position.x * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2, this.model.position.y * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2);
     }
 
     private handlePosition(dt: number): void {
@@ -81,7 +80,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
             return;
         }
 
-        this._velocity += dt * this._gravityForce;
+        this._velocity += dt * GameConstants.GRAVITY_FORCE;
         let newPosition = v2InterpTo(this.node.getPosition(), this._targetPosition, dt, this._velocity);
         this.node.setPosition(newPosition);
     }
