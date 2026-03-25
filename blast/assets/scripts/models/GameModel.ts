@@ -1,12 +1,14 @@
 import { GameState } from "../common/enums/GameState";
 
 export class GameModel {
-    state: GameState;
-    score: number;
-    targetScore: number;
-    remainMoves: number;
+    public state: GameState;
+    
+    public score: number;
+    public targetScore: number;
 
-    remainShuffleCounts: number;
+    public remainMoves: number;
+
+    public remainShuffleCounts: number;
 
     public constructor(init?:Partial<GameModel>) {
         Object.assign(this, init);

@@ -7,7 +7,7 @@ export class GameOverConditionService {
     private _noMovesConditionService: NoMovesConditionService = new NoMovesConditionService();
     private _outOfTurnsConditionService: OutOfTurnsConditionService = new OutOfTurnsConditionService();
 
-    check(grid: GridModel, game: GameModel): boolean {
+    public check(grid: GridModel, game: GameModel): boolean {
         return this._noMovesConditionService.check(grid) || this._outOfTurnsConditionService.check(game);
     }
 }

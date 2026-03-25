@@ -6,11 +6,11 @@ import { ITileBehavior } from "./ITileBehavior";
 export class ColorTileBehavior implements ITileBehavior {
     private _gridService: GridService = new GridService();
 
-    activate(tile: TileModel, grid: GridModel): TileModel[] {
+    public activate(tile: TileModel, grid: GridModel): TileModel[] {
         return this.findConnected(tile, grid);
     }
 
-    findConnected(startTile: TileModel, grid: GridModel): TileModel[] {
+    private findConnected(startTile: TileModel, grid: GridModel): TileModel[] {
         const stack: TileModel[] = [startTile];
         const visited = new Set<string>();
         const result: TileModel[] = [];

@@ -1,13 +1,13 @@
 const {ccclass} = cc._decorator;
 
-@ccclass('BaseViewComponent')
+@ccclass
 export abstract  class BaseViewComponent<T> extends cc.Component {
-    model: T;
+    public model: T;
 
-    init(model: T): void {
+    public init(model: T): void {
         this.model = model;
         this.dirty();
     }
 
-    abstract dirty(): void;
-}
+    public abstract dirty(): void;
+} 

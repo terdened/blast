@@ -7,7 +7,7 @@ import { SuperBombTileBehavior } from "./SuperBombTileBehavior";
 import { VerticalTileBehavior } from "./VerticalTileBehavior";
 
 export class TileBehaviorFactory {
-    static get(type: TileType): ITileBehavior {
+    public static get(type: TileType): ITileBehavior {
         switch (type) {
             case TileType.TT_Color: return new ColorTileBehavior();
             case TileType.TT_HorizontalRocket: return new HorizontalTileBehavior();

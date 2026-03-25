@@ -1,10 +1,10 @@
 import { TileModel } from "./TileModel";
 
 export class GridModel {
-    width: number;
-    height: number;
+    public width: number;
+    public height: number;
 
-    tiles: TileModel[][];
+    public tiles: TileModel[][];
 
     public constructor(init?:Partial<GridModel>) {
         Object.assign(this, init);

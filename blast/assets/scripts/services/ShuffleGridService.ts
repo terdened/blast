@@ -6,7 +6,7 @@ import { GridService } from "./GridService";
 export class ShuffleGridService {
     private _gridService: GridService = new GridService();
 
-    resolve(grid: GridModel, game: GameModel): boolean {
+    public resolve(grid: GridModel, game: GameModel): boolean {
         if(this._gridService.hasMoves(grid)) {
             return false;
         }

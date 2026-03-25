@@ -5,31 +5,45 @@ import { GameConstants } from '../common/GameConstants';
 import { TileType } from '../common/enums/TileType';
 const { ccclass, property } = cc._decorator;
 
-@ccclass('TileViewComponent')
+@ccclass
 export class TileViewComponent extends BaseViewComponent<TileModel> {
     public events = new cc.EventTarget();
 
-    @property([cc.Node])
-    collision: cc.Node;
+    @property({type: cc.Node})
+    public collision: cc.Node = null;
 
     @property([cc.SpriteFrame])
-    frames: cc.SpriteFrame[] = [];
+    public frames: cc.SpriteFrame[] = [];
 
-    @property([cc.SpriteFrame])
-    horizontalRocketFrame: cc.SpriteFrame;
+    @property({type: cc.SpriteFrame})
+    public horizontalRocketFrame: cc.SpriteFrame = null;
 
-    @property([cc.SpriteFrame])
-    verticalRocketFrame: cc.SpriteFrame;
+    @property({type: cc.SpriteFrame})
+    public verticalRocketFrame: cc.SpriteFrame = null;
 
-    @property([cc.SpriteFrame])
-    bombFrame: cc.SpriteFrame;
+    @property({type: cc.SpriteFrame})
+    public bombFrame: cc.SpriteFrame = null;
 
-    @property([cc.SpriteFrame])
-    superBombFrame: cc.SpriteFrame;
+    @property({type: cc.SpriteFrame})
+    public superBombFrame: cc.SpriteFrame = null;
 
     private _movementFinished: boolean = true;
     private _targetPosition: cc.Vec2;
     private _velocity: number = 0;
+
+    public setSpawnPosition(spawnHeight: number) {
+        this.node.setPosition(new cc.Vec2(this._targetPosition.x, spawnHeight));
+    }
+
+    public dirty(): void {
+        this._targetPosition = this.calculateTargetPosition();
+        this._movementFinished = false;
+        this._velocity = 0;
+
+        this.node.zIndex = this.model.position.y;
+
+        this.setFrame();
+    }
 
     protected onEnable(): void {
         this._registerNodeEvent();
@@ -37,10 +51,6 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
 
     protected onDisable(): void {
         this._unregisterNodeEvent();
-    }
-
-    public setSpawnPosition(spawnHeight: number) {
-        this.node.setPosition(new cc.Vec2(this._targetPosition.x, spawnHeight));
     }
 
     protected update(dt: number): void {
@@ -73,17 +83,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
         this.events.emit('click', this.model);
     }
 
-    public dirty(): void {
-        this._targetPosition = this.calculateTargetPosition();
-        this._movementFinished = false;
-        this._velocity = 0;
-
-        this.node.zIndex = this.model.position.y;
-
-        this.setFrame();
-    }
-
-    private setFrame() {
+    private setFrame(): void {
         switch (this.model.type) {
             case TileType.TT_Color:
                 this.getComponent(cc.Sprite).spriteFrame = this.frames[this.model.color];

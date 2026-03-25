@@ -2,19 +2,15 @@ import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { GameModel } from '../models/GameModel';
 const { ccclass, property } = cc._decorator;
 
-@ccclass('GameInfoViewComponent')
+@ccclass
 export class GameInfoViewComponent extends BaseViewComponent<GameModel> {
     @property({type: cc.Label})
-    remainMovesLabel: cc.Label;
+    public remainMovesLabel: cc.Label = null;
 
     @property({type: cc.Label})
-    scoresLabel: cc.Label;
-    
-    start() {
+    public scoresLabel: cc.Label = null;
 
-    }
-
-    dirty() {
+    public dirty(): void {
         this.remainMovesLabel.string = this.model.remainMoves.toString();
         this.scoresLabel.string = `${this.model.score}/${this.model.targetScore}`;
 
@@ -22,14 +18,14 @@ export class GameInfoViewComponent extends BaseViewComponent<GameModel> {
         setTimeout(() => this.playAddScoreAnimation(), 50);
     }
 
-    playAddScoreAnimation() {
+    private playAddScoreAnimation(): void {
         cc.tween(this.scoresLabel.node)
             .to(0.2, {scale: 1.1}, {easing: 'smooth'})
             .to(0.2, {scale: 1}, {easing: 'smooth'})
             .start();
     }
     
-    playLastStepsAnimation() {
+    private playLastStepsAnimation(): void {
         if (this.model.remainMoves > 10) {
             return;
         }
@@ -40,5 +36,3 @@ export class GameInfoViewComponent extends BaseViewComponent<GameModel> {
             .start();
     }
 }
-
-

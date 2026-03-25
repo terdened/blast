@@ -3,13 +3,9 @@ import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { GameConstants } from '../common/GameConstants';
 const { ccclass } = cc._decorator;
 
-@ccclass('GridViewComponent')
+@ccclass
 export class GridViewComponent extends BaseViewComponent<GridModel> {
-    start() {
-
-    }
-
-    dirty() {
+    public dirty(): void {
         const anchorPointX = 1 / ((this.model.width + 1) * 2);
         const anchorPointY = 1 / ((this.model.height + 1) * 2);
         this.node.setAnchorPoint(anchorPointX, anchorPointY);
@@ -24,5 +20,3 @@ export class GridViewComponent extends BaseViewComponent<GridModel> {
         this.node.setPosition(newPosition);
     }
 }
-
-

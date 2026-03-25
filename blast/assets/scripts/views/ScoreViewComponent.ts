@@ -1,15 +1,11 @@
 import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { GameConstants } from '../common/GameConstants';
 import { ScoreModel } from '../models/ScoreModel';
-const { ccclass, property } = cc._decorator;
+const { ccclass } = cc._decorator;
 
-@ccclass('ScoreViewComponent')
-export class ScoreViewComponent extends BaseViewComponent<ScoreModel> {    
-    start() {
-
-    }
-
-    dirty() {
+@ccclass
+export class ScoreViewComponent extends BaseViewComponent<ScoreModel> {
+    public dirty(): void {
         const position = new cc.Vec2(this.model.position.x * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2, this.model.position.y * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2);
         this.node.setPosition(position);
 

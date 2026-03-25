@@ -5,29 +5,28 @@ import { GameInfoViewComponent } from '../views/GameInfoViewComponent';
 import { GameConfig } from '../common/GameConfig';
 const { ccclass, property } = cc._decorator;
 
-@ccclass('GameControllerComponent')
+@ccclass
 export class GameControllerComponent extends cc.Component {
     @property({type: GameInfoViewComponent})
-    gameInfoView: GameInfoViewComponent;
+    public gameInfoView: GameInfoViewComponent = null;
 
     @property({type: GridControllerComponent})
-    gridController: GridControllerComponent;
+    public gridController: GridControllerComponent = null;
 
     @property({type: cc.Node})
-    gameOverPanel: cc.Node;
+    public gameOverPanel: cc.Node = null;
 
     @property({type: cc.Node})
-    winPanel: cc.Node;
+    public winPanel: cc.Node = null;
 
-    game: GameModel = new GameModel();
-    config: GameConfig;
-
+    private _game: GameModel = new GameModel();
+    private _config: GameConfig;
     private _gameService: GameService;
 
     protected async onEnable(): Promise<void> {
-        this.config = await this.loadConfig();
+        this._config = await this.loadConfig();
 
-        this._gameService = new GameService(this.config);
+        this._gameService = new GameService(this._config);
         this._gameService.eventTarget.on('gridUpdated', this.onGridUpdated, this);
         this._gameService.eventTarget.on('gameOver', this.onGameOver, this);
         this._gameService.eventTarget.on('win', this.onWin, this);
@@ -48,7 +47,7 @@ export class GameControllerComponent extends cc.Component {
     }
 
     private onEndOfTurn(score: number): void {
-        this._gameService.onEndOfTurn(this.game, this.gridController.grid, score);
+        this._gameService.onEndOfTurn(this._game, this.gridController.grid, score);
         this.gameInfoView.dirty();
     }
 
@@ -69,11 +68,11 @@ export class GameControllerComponent extends cc.Component {
     private newGame(): void {
         this.gridController.isActive = true;
         this.gridController.clearGrid();
-        this._gameService.startGame(this.game);
-        this.gridController.createGrid(this.config.gridWidth, this.config.gridHeight);
+        this._gameService.startGame(this._game);
+        this.gridController.createGrid(this._config.gridWidth, this._config.gridHeight);
 
         this.gameOverPanel.active = false;
         this.winPanel.active = false;
-        this.gameInfoView.init(this.game);
+        this.gameInfoView.init(this._game);
     }
 }

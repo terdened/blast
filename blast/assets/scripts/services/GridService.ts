@@ -7,7 +7,7 @@ import { TileType } from '../common/enums/TileType';
 export class GridService {
     eventTarget: cc.EventTarget = new cc.EventTarget();
 
-    createGrid(width: number, height: number): GridModel {
+    public createGrid(width: number, height: number): GridModel {
         const result = new GridModel({
             width: width,
             height: height,
@@ -17,7 +17,7 @@ export class GridService {
         return result;
     }
 
-    createTiles(grid: GridModel) {
+    public createTiles(grid: GridModel): void {
         let createdTiles: TileModel[] = [];
 
         for (var y = 0; y < grid.height; y++)
@@ -37,7 +37,7 @@ export class GridService {
         this.eventTarget.emit('TilesCreated', createdTiles);
     }
 
-    createTile(x: number, y: number): TileModel {
+    public createTile(x: number, y: number): TileModel {
         const randomColor = Math.floor(Math.random() * 5);
         const tile = new TileModel({
             position: new cc.Vec2(x, y),
@@ -48,7 +48,7 @@ export class GridService {
         return tile;
     }
 
-    createBomb(x: number, y: number): TileModel {
+    public createBomb(x: number, y: number): TileModel {
         const randomColor = Math.floor(Math.random() * 5);
         const tile = new TileModel({
             position: new cc.Vec2(x, y),
@@ -59,7 +59,7 @@ export class GridService {
         return tile;
     }
 
-    applyGravity(grid: GridModel) {
+    public applyGravity(grid: GridModel): void {
         let updatedTiles: TileModel[] = [];
         for (let x = 0; x < grid.width; x++) {
             let emptyY = 0;
@@ -81,7 +81,7 @@ export class GridService {
         this.eventTarget.emit('TilesUpdated', updatedTiles);
     }
 
-    moveTile(tile: TileModel, x: number, y: number, grid: GridModel) {
+    public moveTile(tile: TileModel, x: number, y: number, grid: GridModel): void {
         grid.tiles[y][x] = tile;
         grid.tiles[tile.position.y][tile.position.x] = undefined;
 
@@ -89,7 +89,7 @@ export class GridService {
         tile.position.y = y;
     }
 
-    removeTile(tile: TileModel, grid: GridModel) {
+    public removeTile(tile: TileModel, grid: GridModel): void {
         if(tile === undefined) {
             return;
         }
@@ -97,7 +97,7 @@ export class GridService {
         grid.tiles[tile.position.y][tile.position.x] = undefined;
     }
 
-    fillEmptyCells(grid: GridModel) {
+    public fillEmptyCells(grid: GridModel): void {
         let createdTiles: TileModel[] = [];
         for (let x = 0; x < grid.width; x++) {
             for (let y = 0; y < grid.height; y++) {
@@ -111,7 +111,7 @@ export class GridService {
         this.eventTarget.emit('TilesCreated', createdTiles);
     }
 
-    getNeighbors(tile: TileModel, grid: GridModel): TileModel[] {
+    public getNeighbors(tile: TileModel, grid: GridModel): TileModel[] {
         const dirs = [
             { x: 0, y: -1 },
             { x: 0, y: 1 },
@@ -133,7 +133,7 @@ export class GridService {
         return result;
     }
 
-    findConnected(startTile: TileModel, grid: GridModel): TileModel[] {
+    public findConnected(startTile: TileModel, grid: GridModel): TileModel[] {
         const stack: TileModel[] = [startTile];
         const visited = new Set<string>();
         const result: TileModel[] = [];
@@ -160,7 +160,7 @@ export class GridService {
         return result;
     }
 
-    collectTile(tile: TileModel, grid: GridModel): number {
+    public collectTile(tile: TileModel, grid: GridModel): number {
         let removedTiles: TileModel[] = [];
 
         const behavior = TileBehaviorFactory.get(tile.type);
@@ -188,7 +188,7 @@ export class GridService {
         return 0;
     }
 
-    generateBonus(tile: TileModel, group: TileModel[]): boolean {
+    public generateBonus(tile: TileModel, group: TileModel[]): boolean {
         if (tile.type === TileType.TT_Color && group.length > 4) {
             const groupSize = this.getGroupSize(group);
 
@@ -210,7 +210,7 @@ export class GridService {
         return false
     }
 
-    shuffleGrid(grid: GridModel) {
+    public shuffleGrid(grid: GridModel): void {
         const flat = this.flatten(grid.tiles);
         let updatedTiles: TileModel[] = [];
 
@@ -231,7 +231,7 @@ export class GridService {
         this.eventTarget.emit('TilesUpdated', updatedTiles);
     }
 
-    flatten(grid: TileModel[][]): TileModel[] {
+    public flatten(grid: TileModel[][]): TileModel[] {
         const result: TileModel[] = [];
 
         for (let y = 0; y < grid.length; y++) {
@@ -243,7 +243,7 @@ export class GridService {
         return result;
     }
 
-    hasMoves(grid: GridModel): boolean {
+    public hasMoves(grid: GridModel): boolean {
         const visited = new Set<string>();
 
         for (let y = 0; y < grid.height; y++) {
@@ -263,7 +263,7 @@ export class GridService {
         return false;
     }
 
-    findGroup(startX: number, startY: number, visited: Set<string>, grid: GridModel): TileModel[] {
+    public findGroup(startX: number, startY: number, visited: Set<string>, grid: GridModel): TileModel[] {
 
         const stack: TileModel[] = [grid.tiles[startY][startX]];
         const result: TileModel[] = [];
@@ -291,7 +291,7 @@ export class GridService {
         return result;
     }
 
-    getGroupSize(group: TileModel[]): cc.Vec2 {
+    public getGroupSize(group: TileModel[]): cc.Vec2 {
         const minX = Math.min(...group.map(_ => _.position.x));
         const minY = Math.min(...group.map(_ => _.position.y));
         const maxX = Math.max(...group.map(_ => _.position.x));
