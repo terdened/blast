@@ -50,37 +50,39 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     }
 
     protected onDisable(): void {
-        this._unregisterNodeEvent();
+        this.unregisterNodeEvent();
     }
 
     protected update(dt: number): void {
         this.handlePosition(dt);
     }
 
-    protected _registerNodeEvent(): void {
-        this.collision.on(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
-        this.collision.on(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
-        this.collision.on(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
+    private _registerNodeEvent(): void {
+        this.collision.on(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
+        this.collision.on(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
+        this.collision.on(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+        this.collision.on(cc.Node.EventType.TOUCH_START, this.onClick, this);
     }
 
-    protected _unregisterNodeEvent(): void {
-        this.collision.off(cc.Node.EventType.MOUSE_ENTER, this._onMouseMoveIn, this);
-        this.collision.off(cc.Node.EventType.MOUSE_LEAVE, this._onMouseMoveOut, this);
-        this.collision.off(cc.Node.EventType.MOUSE_DOWN, this._onMouseDown, this);
+    private unregisterNodeEvent(): void {
+        this.collision.off(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
+        this.collision.off(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
+        this.collision.off(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+        this.collision.off(cc.Node.EventType.TOUCH_START, this.onClick, this);
     }
 
-    protected _onMouseMoveIn (event?: cc.Event.EventMouse): void {
+    private onClick (event?: cc.Event.EventMouse): void {
+        this.events.emit('click', this.model);
+    }
+
+    private playHoverAnimation() {
         cc.tween(this.node).to(0.2, {scale: 1.1 }, {easing: 'smooth'}).start();
         this.node.color = new cc.Color(128, 128, 128);
     }
 
-    protected _onMouseMoveOut (event?: cc.Event.EventMouse): void {
+    private playUnhoverAnimation() {
         cc.tween(this.node).to(0.2, {scale: 1 }, {easing: 'smooth'}).start();
         this.node.color = new cc.Color(255, 255, 255);
-    }
-
-    protected _onMouseDown (event?: cc.Event.EventMouse): void {
-        this.events.emit('click', this.model);
     }
 
     private setFrame(): void {
