@@ -24,30 +24,23 @@ export class GridControllerComponent extends cc.Component {
     tilePrefab: cc.Prefab;
 
     _viewMap: Map<TileModel, cc.Node> = new Map<TileModel, cc.Node>();
-    _newTilesColumnCount: Map<number, number> = new Map<number, number>();
 
     _gridService: GridService;
 
-    _height: number;
-
     init() {
         this._gridService = new GridService();
-        this._gridService.eventTarget.on('TileCreated', this.onTileCreated, this);
-        this._gridService.eventTarget.on('TileUpdated', this.onTileUpdated, this);
-        this._gridService.eventTarget.on('TileRemoved', this.onTileRemoved, this);
+        this._gridService.eventTarget.on('TilesCreated', this.onTilesCreated, this);
+        this._gridService.eventTarget.on('TilesUpdated', this.onTilesUpdated, this);
+        this._gridService.eventTarget.on('TilesRemoved', this.onTilesRemoved, this);
     }
 
     start() {
     }
 
-    protected update(dt: number): void {
-        if(this._newTilesColumnCount.size > 0)
-            this._newTilesColumnCount.clear(); 
-    }
-
     createGrid(width: number, height: number) {
-        this._height = height;
         this.grid = this._gridService.createGrid(width, height);
+        this._gridService.createTiles(this.grid);
+
         this.updateBackground();
     }
 
@@ -56,67 +49,79 @@ export class GridControllerComponent extends cc.Component {
         this._viewMap.clear();
     }
 
-    onTileCreated(tile: TileModel) {
-        const tileNode = cc.instantiate(this.tilePrefab);
-        this.background.addChild(tileNode);
-        
-        let viewComponent = tileNode.getComponent(TileViewComponent);
-        viewComponent.init(tile);
-        viewComponent.setSpawnPosition(this.calculateTileSpawnHeight(tile));
-
-        viewComponent.events.on('click', this.onTileClicked, this);
-
-        this._viewMap.set(tile, tileNode);
-    }
-
-    calculateTileSpawnHeight(tile: TileModel): number {
-        let columnOffset = this._newTilesColumnCount.get(tile.position.x) ?? 0;
+    calculateTileSpawnHeight(tile: TileModel, newTilesInColumnCount: Map<number, number>): number {
+        let columnOffset = newTilesInColumnCount.get(tile.position.x) ?? 0;
         columnOffset++;
-        this._newTilesColumnCount.set(tile.position.x, columnOffset);
+        newTilesInColumnCount.set(tile.position.x, columnOffset);
 
-        return columnOffset * this._tileSize + this._height * this._tileSize;
+        return columnOffset * this._tileSize + this.grid.height * this._tileSize;
     }
 
-    onTileClicked(model: TileModel) {
+    onTileClicked(tile: TileModel) {
         if (!this.isActive) {
             return;
         }
         
-        const score = this._gridService.collectTile(model, this.grid);
+        const score = this._gridService.collectTile(tile, this.grid);
         if (score > 0) {
-            const scoreModel = new ScoreModel({
-                position: model.position, 
-                score: score
-            });
-            const scoreNode = cc.instantiate(this.scorePrefab);
-            this.background.addChild(scoreNode);
-        
-            let viewComponent = scoreNode.getComponent(ScoreViewComponent);
-            viewComponent.init(scoreModel);
-            
+            this.spawnScoreView(score, tile.position);
             this.eventTarget.emit('endOfTurn', score);
         }
     }
 
-    onTileUpdated(tile: TileModel) {
-        const tileNode = this._viewMap.get(tile);
-
-        if(tile === undefined) {
-            return;
-        }
-        const tileView = tileNode.getComponent(TileViewComponent);
-        tileView.dirty();
+    spawnScoreView(score: number, position: cc.Vec2) {
+        const scoreModel = new ScoreModel({
+            position: position, 
+            score: score
+        });
+        const scoreNode = cc.instantiate(this.scorePrefab);
+        this.background.addChild(scoreNode);
+    
+        let viewComponent = scoreNode.getComponent(ScoreViewComponent);
+        viewComponent.init(scoreModel);
     }
 
-    onTileRemoved(tile: TileModel) {
-        const tileNode = this._viewMap.get(tile);
+    onTilesCreated(tiles: TileModel[]) {
+        let newTilesInColumnCount: Map<number, number> = new Map<number, number>();
 
-        if(tile === undefined) {
-            return;
+        for (let tile of tiles) {
+            const tileNode = cc.instantiate(this.tilePrefab);
+            this.background.addChild(tileNode);
+            
+            let viewComponent = tileNode.getComponent(TileViewComponent);
+            viewComponent.init(tile);
+            viewComponent.setSpawnPosition(this.calculateTileSpawnHeight(tile, newTilesInColumnCount));
+
+            viewComponent.events.on('click', this.onTileClicked, this);
+
+            this._viewMap.set(tile, tileNode);
         }
+    }
 
-        tileNode.destroy();
-        this._viewMap.delete(tile);
+    onTilesUpdated(tiles: TileModel[]) {
+        for (let tile of tiles) {
+            const tileNode = this._viewMap.get(tile);
+
+            if (tileNode === undefined) {
+                continue;
+            }
+
+            const tileView = tileNode.getComponent(TileViewComponent);
+            tileView.dirty();
+        }
+    }
+
+    onTilesRemoved(tiles: TileModel[]) {
+        for (let tile of tiles) {
+            const tileNode = this._viewMap.get(tile);
+
+            if (tileNode === undefined) {
+                continue;
+            }
+
+            tileNode.destroy();
+            this._viewMap.delete(tile);
+        }
     }
 
     updateBackground() {
