@@ -2,6 +2,7 @@ import { TileModel } from '../models/TileModel';
 import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { v2InterpTo } from '../common/extentsions/MathExtentions';
 import { GameConstants } from '../common/GameConstants';
+import { TileType } from '../common/enums/TileType';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('TileViewComponent')
@@ -13,6 +14,18 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
 
     @property([cc.SpriteFrame])
     frames: cc.SpriteFrame[] = [];
+
+    @property([cc.SpriteFrame])
+    horizontalRocketFrame: cc.SpriteFrame;
+
+    @property([cc.SpriteFrame])
+    verticalRocketFrame: cc.SpriteFrame;
+
+    @property([cc.SpriteFrame])
+    bombFrame: cc.SpriteFrame;
+
+    @property([cc.SpriteFrame])
+    superBombFrame: cc.SpriteFrame;
 
     private _movementFinished: boolean = true;
     private _targetPosition: cc.Vec2;
@@ -65,10 +78,29 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
         this._movementFinished = false;
         this._velocity = 0;
 
-        let spriteComponent = this.getComponent(cc.Sprite);
-        spriteComponent.spriteFrame = this.frames[this.model.color];
-
         this.node.zIndex = this.model.position.y;
+
+        this.setFrame();
+    }
+
+    private setFrame() {
+        switch (this.model.type) {
+            case TileType.TT_Color:
+                this.getComponent(cc.Sprite).spriteFrame = this.frames[this.model.color];
+                break;
+            case TileType.TT_HorizontalRocket:
+                this.getComponent(cc.Sprite).spriteFrame = this.horizontalRocketFrame;
+                break;
+            case TileType.TT_VerticalRocket:
+                this.getComponent(cc.Sprite).spriteFrame = this.verticalRocketFrame;
+                break;
+            case TileType.TT_Bomb:
+                this.getComponent(cc.Sprite).spriteFrame = this.bombFrame;
+                break;
+            case TileType.TT_SuperBomb:
+                this.getComponent(cc.Sprite).spriteFrame = this.superBombFrame;
+                break;
+        }
     }
 
     private calculateTargetPosition(): cc.Vec2 {

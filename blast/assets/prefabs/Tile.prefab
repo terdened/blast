@@ -211,6 +211,18 @@
         "__uuid__": "c01a9fb7-a337-414a-84a0-999406707979"
       }
     ],
+    "horizontalRocketFrame": {
+      "__uuid__": "7cb41599-d12f-4341-ac12-f6d95fd8237b"
+    },
+    "verticalRocketFrame": {
+      "__uuid__": "9d890146-ae1d-4f69-ba2f-a3f31671ceca"
+    },
+    "bombFrame": {
+      "__uuid__": "3b30b13f-a9b9-4d3f-9f76-c6fe6277b869"
+    },
+    "superBombFrame": {
+      "__uuid__": "b711b07a-7e8c-4afa-bac9-2cce9be650bf"
+    },
     "_id": ""
   },
   {

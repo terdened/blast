@@ -1,6 +1,8 @@
 import { GridModel } from '../models/GridModel';
 import { TileModel } from '../models/TileModel';
 import { TileColor } from '../common/enums/TileColor';
+import { TileBehaviorFactory } from './tileBehaviors/TileBehaviorFactory';
+import { TileType } from '../common/enums/TileType';
 
 export class GridService {
     eventTarget: cc.EventTarget = new cc.EventTarget();
@@ -39,6 +41,18 @@ export class GridService {
         const randomColor = Math.floor(Math.random() * 5);
         const tile = new TileModel({
             position: new cc.Vec2(x, y),
+            type: TileType.TT_Color,
+            color: randomColor as TileColor
+        });
+
+        return tile;
+    }
+
+    createBomb(x: number, y: number): TileModel {
+        const randomColor = Math.floor(Math.random() * 5);
+        const tile = new TileModel({
+            position: new cc.Vec2(x, y),
+            type: TileType.TT_Bomb,
             color: randomColor as TileColor
         });
 
@@ -147,10 +161,18 @@ export class GridService {
     }
 
     collectTile(tile: TileModel, grid: GridModel): number {
-        const group = this.findConnected(tile, grid);
         let removedTiles: TileModel[] = [];
 
+        const behavior = TileBehaviorFactory.get(tile.type);
+        const group = behavior.activate(tile, grid);
+
         if (group.length >= 2) {
+            const score = group.length * 5;
+
+            if (this.generateBonus(tile, group)) {
+                group.shift();
+            }
+
             for (const item of group) {
                 this.removeTile(item, grid);
                 removedTiles.push(item);
@@ -160,10 +182,32 @@ export class GridService {
             this.fillEmptyCells(grid);
 
             this.eventTarget.emit('TilesRemoved', removedTiles);
-            return group.length * 5;
+            return score;
         }
 
         return 0;
+    }
+
+    generateBonus(tile: TileModel, group: TileModel[]): boolean {
+        if (tile.type === TileType.TT_Color && group.length > 4) {
+            const groupSize = this.getGroupSize(group);
+
+            if(group.length > 9) {
+                tile.type = TileType.TT_SuperBomb;
+            } else if (groupSize.x > groupSize.y) {
+                tile.type = TileType.TT_HorizontalRocket;
+            } else if(groupSize.y > groupSize.x) {
+                tile.type = TileType.TT_VerticalRocket;
+            } else {
+                tile.type = TileType.TT_Bomb;
+            }
+
+            this.eventTarget.emit('TilesUpdated', [tile]);
+            
+            return true;
+        }
+
+        return false
     }
 
     shuffleGrid(grid: GridModel) {
@@ -245,6 +289,15 @@ export class GridService {
         }
 
         return result;
+    }
+
+    getGroupSize(group: TileModel[]): cc.Vec2 {
+        const minX = Math.min(...group.map(_ => _.position.x));
+        const minY = Math.min(...group.map(_ => _.position.y));
+        const maxX = Math.max(...group.map(_ => _.position.x));
+        const maxY = Math.max(...group.map(_ => _.position.y));
+
+        return new cc.Vec2(maxX - minX, maxY - minY);
     }
 }
 
