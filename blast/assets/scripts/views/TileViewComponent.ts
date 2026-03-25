@@ -61,14 +61,12 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
         this.collision.on(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
         this.collision.on(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
         this.collision.on(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
-        this.collision.on(cc.Node.EventType.TOUCH_START, this.onClick, this);
     }
 
     private unregisterNodeEvent(): void {
         this.collision.off(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
         this.collision.off(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
         this.collision.off(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
-        this.collision.off(cc.Node.EventType.TOUCH_START, this.onClick, this);
     }
 
     private onClick (event?: cc.Event.EventMouse): void {

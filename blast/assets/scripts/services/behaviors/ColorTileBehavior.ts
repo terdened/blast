@@ -1,10 +1,10 @@
 import { GridModel } from "../../models/GridModel";
 import { TileModel } from "../../models/TileModel";
-import { GridService } from "../GridService";
+import { GroupService } from "../grid/GroupService";
 import { ITileBehavior } from "./ITileBehavior";
 
 export class ColorTileBehavior implements ITileBehavior {
-    private _gridService: GridService = new GridService();
+    private _groupService: GroupService = new GroupService();
 
     public activate(tile: TileModel, grid: GridModel): TileModel[] {
         return this.findConnected(tile, grid);
@@ -28,7 +28,7 @@ export class ColorTileBehavior implements ITileBehavior {
 
             result.push(tile);
 
-            const neighbors = this._gridService.getNeighbors(tile, grid);
+            const neighbors = this._groupService.getNeighbors(tile, grid);
             for (const n of neighbors) {
                 stack.push(n);
             }

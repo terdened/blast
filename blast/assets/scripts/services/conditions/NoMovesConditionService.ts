@@ -1,11 +1,11 @@
 import { GridModel } from "../../models/GridModel";
-import { GridService } from "../GridService";
+import { GroupService } from "../grid/GroupService";
 
 export class NoMovesConditionService {
-    private _gridService: GridService = new GridService();
+    private _groupService: GroupService = new GroupService();
 
     public check(grid: GridModel): boolean {
-        if(this._gridService.hasMoves(grid)) {
+        if(this._groupService.hasMoves(grid)) {
             return false;
         }
 

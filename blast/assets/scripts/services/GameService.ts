@@ -2,36 +2,34 @@ import { GameState } from "../common/enums/GameState";
 import { GameConfig } from "../common/GameConfig";
 import { GameModel } from "../models/GameModel";
 import { GridModel } from "../models/GridModel";
-import { GameOverConditionService } from "./conditionServices/GameOverConditionService";
-import { WinConditionService } from "./conditionServices/WinConditionService";
-import { ShuffleGridService } from "./ShuffleGridService";
+import { GameOverConditionService } from "./conditions/GameOverConditionService";
+import { WinConditionService } from "./conditions/WinConditionService";
 
 export class GameService {
     public eventTarget: cc.EventTarget = new cc.EventTarget();
     
     private _gameOverConditionService: GameOverConditionService = new GameOverConditionService();
     private _winConditionService: WinConditionService = new WinConditionService();
-    private _shuffleGridService: ShuffleGridService = new ShuffleGridService();
 
     constructor (private _config: GameConfig) {
 
     }
 
-    public onEndOfTurn(game: GameModel, grid: GridModel, score: number): void {
+    public handleEndOfTurn(game: GameModel, grid: GridModel, score: number): GameState {
         game.remainMoves--;
         game.score += score;
 
-        if (this._shuffleGridService.resolve(grid, game)) {
-            this.eventTarget.emit('gridUpdated');
-        }
-
         if (this._winConditionService.check(game)) {
             this.win(game);
-            this.eventTarget.emit('win');
-        } else if (this._gameOverConditionService.check(grid, game)) {
+            return GameState.GS_Win;
+        } 
+
+        if (this._gameOverConditionService.check(grid, game)) {
             this.gameOver(game);
-            this.eventTarget.emit('gameOver');
+            return GameState.GS_GameOver;
         }
+
+        return GameState.GS_Play;
     }
 
     public startGame (game: GameModel): void {

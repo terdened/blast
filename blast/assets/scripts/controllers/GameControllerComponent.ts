@@ -3,6 +3,8 @@ import { GridControllerComponent } from './GridControllerComponent';
 import { GameService } from '../services/GameService';
 import { GameInfoViewComponent } from '../views/GameInfoViewComponent';
 import { GameConfig } from '../common/GameConfig';
+import { ShuffleService } from '../services/grid/ShuffleService';
+import { GameState } from '../common/enums/GameState';
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -22,18 +24,17 @@ export class GameControllerComponent extends cc.Component {
     private _game: GameModel = new GameModel();
     private _config: GameConfig;
     private _gameService: GameService;
+    private _shuffleGridService: ShuffleService = new ShuffleService();
 
     protected async onEnable(): Promise<void> {
         this._config = await this.loadConfig();
 
         this._gameService = new GameService(this._config);
-        this._gameService.eventTarget.on('gridUpdated', this.onGridUpdated, this);
-        this._gameService.eventTarget.on('gameOver', this.onGameOver, this);
-        this._gameService.eventTarget.on('win', this.onWin, this);
 
-        this.gridController.init();
         this.gridController.eventTarget.on('endOfTurn', this.onEndOfTurn, this);
-        
+
+        this._shuffleGridService = new ShuffleService();
+
         this.newGame();
     }
 
@@ -47,22 +48,30 @@ export class GameControllerComponent extends cc.Component {
     }
 
     private onEndOfTurn(score: number): void {
-        this._gameService.onEndOfTurn(this._game, this.gridController.grid, score);
+        if (this._shuffleGridService.resolve(this.gridController.grid, this._game)) {
+            this.gridController.redrawTiles();
+        }
+
+        const gameState = this._gameService.handleEndOfTurn(this._game, this.gridController.grid, score);
         this.gameInfoView.dirty();
+
+        if (gameState === GameState.GS_Win) {
+            this.win();
+        }
+
+        if (gameState === GameState.GS_GameOver) {
+            this.gameOver();
+        }
     }
 
-    private onWin(): void {
+    private win(): void {
         this.winPanel.active = true;
         this.gridController.isActive = false;
     }
 
-    private onGameOver(): void {
+    private gameOver(): void {
         this.gameOverPanel.active = true;
         this.gridController.isActive = false;
-    }
-
-    private onGridUpdated(): void {
-        this.gridController.redrawTiles();
     }
 
     private newGame(): void {

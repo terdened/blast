@@ -1,11 +1,12 @@
 import { TileViewComponent } from '../views/TileViewComponent';
 import { TileModel } from '../models/TileModel';
 import { GridViewComponent } from '../views/GridViewComponent';
-import { GridService } from '../services/GridService';
+import { GridService } from '../services/grid/GridService';
 import { GridModel } from '../models/GridModel';
 import { ScoreModel } from '../models/ScoreModel';
 import { ScoreViewComponent } from '../views/ScoreViewComponent';
 import { GameConstants } from '../common/GameConstants';
+import { GridUpdateResult } from '../models/results/GridUpdateResult';
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -24,18 +25,12 @@ export class GridControllerComponent extends cc.Component {
     public tilePrefab: cc.Prefab = null;
 
     private _viewMap: Map<TileModel, cc.Node> = new Map<TileModel, cc.Node>();
-    private _gridService: GridService;
-
-    public init(): void {
-        this._gridService = new GridService();
-        this._gridService.eventTarget.on('TilesCreated', this.onTilesCreated, this);
-        this._gridService.eventTarget.on('TilesUpdated', this.onTilesUpdated, this);
-        this._gridService.eventTarget.on('TilesRemoved', this.onTilesRemoved, this);
-    }
+    private _gridService: GridService = new GridService();
 
     public createGrid(width: number, height: number): void {
-        this.grid = this._gridService.createGrid(width, height);
-        this._gridService.createTiles(this.grid);
+        const gridCreateResult = this._gridService.createGrid(width, height);
+        this.grid = gridCreateResult.grid;
+        this.handleGridUpdateResult(gridCreateResult.updateResult);
 
         this.updateBackground();
     }
@@ -64,10 +59,12 @@ export class GridControllerComponent extends cc.Component {
             return;
         }
         
-        const score = this._gridService.collectTile(tile, this.grid);
-        if (score > 0) {
-            this.spawnScoreView(score, tile.position);
-            this.eventTarget.emit('endOfTurn', score);
+        const collectTileResult = this._gridService.processTurn(tile, this.grid);
+        this.handleGridUpdateResult(collectTileResult.updateResult);
+
+        if (collectTileResult.score > 0) {
+            this.spawnScoreView(collectTileResult.score, tile.position);
+            this.eventTarget.emit('endOfTurn', collectTileResult.score);
         }
     }
 
@@ -81,6 +78,17 @@ export class GridControllerComponent extends cc.Component {
     
         let viewComponent = scoreNode.getComponent(ScoreViewComponent);
         viewComponent.init(scoreModel);
+    }
+
+    private updateBackground(): void {
+        let viewComponent = this.background.getComponent(GridViewComponent);
+        viewComponent.init(this.grid);
+    }
+
+    private handleGridUpdateResult(updateResult: GridUpdateResult) {
+        this.onTilesCreated(updateResult.created);
+        this.onTilesUpdated(updateResult.updated);
+        this.onTilesRemoved(updateResult.removed);
     }
 
     private onTilesCreated(tiles: TileModel[]): void {
@@ -124,11 +132,6 @@ export class GridControllerComponent extends cc.Component {
             tileNode.destroy();
             this._viewMap.delete(tile);
         }
-    }
-
-    private updateBackground(): void {
-        let viewComponent = this.background.getComponent(GridViewComponent);
-        viewComponent.init(this.grid);
     }
 }
 
