@@ -12,6 +12,7 @@ export class GridControllerComponent extends cc.Component {
     grid: GridModel;
     eventTarget: cc.EventTarget = new cc.EventTarget();
     isActive: boolean = true;
+    private _tileSize: number = 100;
 
     @property({type: cc.Node})
     background: cc.Node;
@@ -23,8 +24,11 @@ export class GridControllerComponent extends cc.Component {
     tilePrefab: cc.Prefab;
 
     _viewMap: Map<TileModel, cc.Node> = new Map<TileModel, cc.Node>();
+    _newTilesColumnCount: Map<number, number> = new Map<number, number>();
 
     _gridService: GridService;
+
+    _height: number;
 
     init() {
         this._gridService = new GridService();
@@ -36,7 +40,13 @@ export class GridControllerComponent extends cc.Component {
     start() {
     }
 
+    protected update(dt: number): void {
+        if(this._newTilesColumnCount.size > 0)
+            this._newTilesColumnCount.clear(); 
+    }
+
     createGrid(width: number, height: number) {
+        this._height = height;
         this.grid = this._gridService.createGrid(width, height);
         this.updateBackground();
     }
@@ -47,16 +57,24 @@ export class GridControllerComponent extends cc.Component {
     }
 
     onTileCreated(tile: TileModel) {
-
         const tileNode = cc.instantiate(this.tilePrefab);
         this.background.addChild(tileNode);
         
         let viewComponent = tileNode.getComponent(TileViewComponent);
         viewComponent.init(tile);
+        viewComponent.setSpawnPosition(this.calculateTileSpawnHeight(tile));
 
         viewComponent.events.on('click', this.onTileClicked, this);
 
         this._viewMap.set(tile, tileNode);
+    }
+
+    calculateTileSpawnHeight(tile: TileModel): number {
+        let columnOffset = this._newTilesColumnCount.get(tile.position.x) ?? 0;
+        columnOffset++;
+        this._newTilesColumnCount.set(tile.position.x, columnOffset);
+
+        return columnOffset * this._tileSize + this._height * this._tileSize;
     }
 
     onTileClicked(model: TileModel) {

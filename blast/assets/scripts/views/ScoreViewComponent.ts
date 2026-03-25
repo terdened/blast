@@ -18,11 +18,11 @@ export class ScoreViewComponent extends BaseViewComponent<ScoreModel> {
         label.string = `+${this.model.score}`;
         
         cc.tween(this.node)
-            .by(0.4, {position: new cc.Vec3(0, 200, 0), opacity: -255}, {easing: 'smooth'})
+            .by(0.6, {position: new cc.Vec3(0, 200, 0), opacity: -255}, {easing: 'smooth'})
             .start();
         
             
-        setTimeout(() => this.node.destroy(), 400);
+        setTimeout(() => this.node.destroy(), 600);
 
         this.node.zIndex = 9999;
     }

@@ -1,5 +1,6 @@
 import { TileModel } from '../models/TileModel';
 import { BaseViewComponent } from '../common/components/BaseViewComponent';
+import { v2InterpTo } from '../common/extentsions/MathExtentions';
 const { ccclass, property } = cc._decorator;
 
 @ccclass('TileViewComponent')
@@ -14,9 +15,9 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
 
     private _movementFinished: boolean = true;
     private _targetPosition: cc.Vec2;
-    private _moveTime: number = 0;
-    private _moveDuration: number = 2;
     private _tileSize: number = 100;
+    private _velocity: number = 0;
+    private _gravityForce: number = 50;
 
     protected onEnable(): void {
         this._registerNodeEvent();
@@ -26,10 +27,8 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
         this._unregisterNodeEvent();
     }
 
-    protected start(): void {
-        let newPosition = new cc.Vec2();
-        cc.Vec2.add(newPosition, this._targetPosition, new cc.Vec2(0, this._tileSize * 2));
-        this.node.setPosition(newPosition);
+    public setSpawnPosition(spawnHeight: number) {
+        this.node.setPosition(new cc.Vec2(this._targetPosition.x, spawnHeight));
     }
 
     protected update(dt: number): void {
@@ -65,9 +64,7 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     public dirty(): void {
         this._targetPosition = this.calculateTargetPosition();
         this._movementFinished = false;
-        this._moveTime = 0;
-        const randomDuration = Math.floor(Math.random() * 0.5) + 1.5;
-        this._moveDuration = randomDuration;
+        this._velocity = 0;
 
         let spriteComponent = this.getComponent(cc.Sprite);
         spriteComponent.spriteFrame = this.frames[this.model.color];
@@ -84,24 +81,8 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
             return;
         }
 
-        this._moveTime += dt;
-        let ratio = 1.0;
-        if (this._moveDuration > 0) {
-            ratio = this._moveTime / this._moveDuration;
-        }
-
-        if (ratio >= 1) {
-            ratio = 1;
-        }
-
-        let newPosition = new cc.Vec2();
-        cc.Vec2.lerp(newPosition, this.node.getPosition(), this._targetPosition, ratio);
-        
-        if (cc.Vec2.distance(newPosition, this._targetPosition) < 1) {
-            newPosition = this._targetPosition;
-            this._movementFinished = true;
-        }
-
+        this._velocity += dt * this._gravityForce;
+        let newPosition = v2InterpTo(this.node.getPosition(), this._targetPosition, dt, this._velocity);
         this.node.setPosition(newPosition);
     }
 }
