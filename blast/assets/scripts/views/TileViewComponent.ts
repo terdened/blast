@@ -115,10 +115,6 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
         }
     }
 
-    private calculateTargetPosition(): cc.Vec2 {
-        return new cc.Vec2(this.model.position.x * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2, this.model.position.y * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE / 2);
-    }
-
     private handlePosition(dt: number): void {
         if (this._movementFinished) {
             return;
