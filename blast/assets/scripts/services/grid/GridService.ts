@@ -4,7 +4,7 @@ import { TileBehaviorFactory } from '../behaviors/TileBehaviorFactory';
 import { GravityService } from './GravityService';
 import { BonusService } from './BonusService';
 import { SpawnService } from './SpawnService';
-import { CollectTileResultModel } from '../../models/results/CollectTileResultModel';
+import { CollectTileResultModel as TurnResultModel } from '../../models/results/CollectTileResultModel';
 import { CreateGridResultModel } from '../../models/results/CreateGridResultModel';
 import { GridUpdateResult } from '../../models/results/GridUpdateResult';
 
@@ -29,33 +29,29 @@ export class GridService {
         return result;
     }
 
-    public removeTile(tile: TileModel, grid: GridModel): void {
-        if(tile === undefined) {
-            return;
-        }
-
-        grid.tiles[tile.position.y][tile.position.x] = undefined;
-    }
-
     public removeTiles(tiles: TileModel[], grid: GridModel): GridUpdateResult {
         const result = new GridUpdateResult();
 
-        for (const item of tiles) {
-            this.removeTile(item, grid);
-            result.removed.push(item);
+        for (const tile of tiles) {
+            if(tile === undefined) {
+                continue;
+            }
+
+            grid.tiles[tile.position.y][tile.position.x] = undefined;
+            result.removed.push(tile);
         }
 
         return result;
     }
 
-    public processTurn(tile: TileModel, grid: GridModel): CollectTileResultModel {
+    public processTurn(tile: TileModel, grid: GridModel): TurnResultModel {
         const behavior = this._tileBehaviorFactory.get(tile.type);
         const group = behavior.activate(tile, grid);
         if (group.length < 2) {
             return;
         }
 
-        const result = new CollectTileResultModel();
+        const result = new TurnResultModel();
         result.score = group.length * 5;
         result.updateResult.append(this._bonusService.generateBonus(tile, group));
         result.updateResult.append(this.removeTiles(group, grid));

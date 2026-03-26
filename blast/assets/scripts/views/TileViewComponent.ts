@@ -3,10 +3,12 @@ import { BaseViewComponent } from '../common/components/BaseViewComponent';
 import { v2InterpTo } from '../common/extentsions/MathExtentions';
 import { GameConstants } from '../common/GameConstants';
 import { TileType } from '../common/enums/TileType';
+import { GridLayoutService } from '../services/grid/GridLayoutService';
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export class TileViewComponent extends BaseViewComponent<TileModel> {
+    private _gridLayoutService: GridLayoutService = new GridLayoutService();
     public events = new cc.EventTarget();
 
     @property({type: cc.Node})
@@ -31,12 +33,12 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     private _targetPosition: cc.Vec2;
     private _velocity: number = 0;
 
-    public setSpawnPosition(spawnHeight: number) {
-        this.node.setPosition(new cc.Vec2(this._targetPosition.x, spawnHeight));
+    public setSpawnPosition(position: cc.Vec2) {
+        this.node.setPosition(position);
     }
 
     public dirty(): void {
-        this._targetPosition = this.calculateTargetPosition();
+        this._targetPosition = this._gridLayoutService.getTilePosition(this.model.position);
         this._movementFinished = false;
         this._velocity = 0;
 
@@ -60,13 +62,23 @@ export class TileViewComponent extends BaseViewComponent<TileModel> {
     private _registerNodeEvent(): void {
         this.collision.on(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
         this.collision.on(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
-        this.collision.on(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+
+        if (cc.sys.isMobile) {
+            this.collision.on(cc.Node.EventType.TOUCH_START, this.onClick, this);
+        } else {
+            this.collision.on(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+        }
     }
 
     private unregisterNodeEvent(): void {
         this.collision.off(cc.Node.EventType.MOUSE_ENTER, this.playHoverAnimation, this);
         this.collision.off(cc.Node.EventType.MOUSE_LEAVE, this.playUnhoverAnimation, this);
-        this.collision.off(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+
+        if (cc.sys.isMobile) {
+            this.collision.off(cc.Node.EventType.TOUCH_START, this.onClick, this);
+        } else {
+            this.collision.off(cc.Node.EventType.MOUSE_DOWN, this.onClick, this);
+        }
     }
 
     private onClick (event?: cc.Event.EventMouse): void {

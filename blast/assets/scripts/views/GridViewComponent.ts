@@ -1,22 +1,20 @@
 import { GridModel } from '../models/GridModel';
 import { BaseViewComponent } from '../common/components/BaseViewComponent';
-import { GameConstants } from '../common/GameConstants';
+import { GridLayoutService } from '../services/grid/GridLayoutService';
 const { ccclass } = cc._decorator;
 
 @ccclass
 export class GridViewComponent extends BaseViewComponent<GridModel> {
+    private _gridLayoutService: GridLayoutService = new GridLayoutService();
+
     public dirty(): void {
-        const anchorPointX = 1 / ((this.model.width + 1) * 2);
-        const anchorPointY = 1 / ((this.model.height + 1) * 2);
-        this.node.setAnchorPoint(anchorPointX, anchorPointY);
+        const anchor = this._gridLayoutService.getGridAnchor(this.model.width, this.model.height);
+        this.node.setAnchorPoint(anchor.x, anchor.y);
 
-        const width = this.model.width * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE;
-        const height = this.model.height * GameConstants.TILE_SIZE + GameConstants.TILE_SIZE;
-        this.node.setContentSize(width, height);
+        const size = this._gridLayoutService.getGridSize(this.model.width, this.model.height);
+        this.node.setContentSize(size.x, size.y);
 
-        const xPos = -this.model.width * GameConstants.TILE_SIZE / 4;
-        const yPos = -this.model.height * GameConstants.TILE_SIZE / 4;
-        const newPosition = new cc.Vec2(xPos, yPos);
-        this.node.setPosition(newPosition);
+        const position = this._gridLayoutService.getGridPosition(this.model.width, this.model.height);
+        this.node.setPosition(position);
     }
 }

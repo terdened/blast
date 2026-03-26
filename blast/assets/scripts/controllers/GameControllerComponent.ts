@@ -24,16 +24,11 @@ export class GameControllerComponent extends cc.Component {
     private _game: GameModel = new GameModel();
     private _config: GameConfig;
     private _gameService: GameService;
-    private _shuffleGridService: ShuffleService = new ShuffleService();
 
     protected async onEnable(): Promise<void> {
         this._config = await this.loadConfig();
-
         this._gameService = new GameService(this._config);
-
         this.gridController.eventTarget.on('endOfTurn', this.onEndOfTurn, this);
-
-        this._shuffleGridService = new ShuffleService();
 
         this.newGame();
     }
@@ -48,18 +43,19 @@ export class GameControllerComponent extends cc.Component {
     }
 
     private onEndOfTurn(score: number): void {
-        if (this._shuffleGridService.resolve(this.gridController.grid, this._game)) {
+        const endOfTurnResult = this._gameService.handleEndOfTurn(this._game, this.gridController.grid, score);
+
+        if (endOfTurnResult.IsGridUpdated) {
             this.gridController.redrawTiles();
         }
-
-        const gameState = this._gameService.handleEndOfTurn(this._game, this.gridController.grid, score);
+        
         this.gameInfoView.dirty();
 
-        if (gameState === GameState.GS_Win) {
+        if (endOfTurnResult.GameState === GameState.GS_Win) {
             this.win();
         }
 
-        if (gameState === GameState.GS_GameOver) {
+        if (endOfTurnResult.GameState === GameState.GS_GameOver) {
             this.gameOver();
         }
     }

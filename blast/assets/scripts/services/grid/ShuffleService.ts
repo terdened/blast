@@ -5,7 +5,7 @@ import { GroupService } from "./GroupService";
 export class ShuffleService {
     private _groupService: GroupService = new GroupService();
 
-    public resolve(grid: GridModel, game: GameModel): boolean {
+    public resolve(game: GameModel, grid: GridModel): boolean {
         if(this._groupService.hasMoves(grid)) {
             return false;
         }
